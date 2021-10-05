@@ -7,6 +7,9 @@
 - django-admin startproject . => start project
 
 - py manage.py runserver
+- py manage.py startapp store
+- py manage.py startapp tags
+- (Add to list of installed apps under settings.py)
 
 ## Views
 
