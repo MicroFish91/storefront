@@ -1,7 +1,27 @@
 from django.db import models
+from django.db.models.deletion import SET_NULL
 
 # Create your models here:
 # Djano creates id field type automatically (primary key) unless otherwise specified
+
+
+# Collection (one) - Product (many)  : Collection can have multiple Products
+# Customer (one) - Order (many)  : Customer can have multiple Orders
+# Order (one) - Item (many)  : Order can have multiple Items
+# Cart (one) - Item (many)  : Cart can have multiple Items
+
+
+class Promotion(models.Model):
+    description = models.CharField(max_length=255)
+    discount = models.FloatField()
+    # product_set => products
+
+
+class Collection(models.Model):
+    title = models.CharField(max_length=255)
+    featured_product = models.ForeignKey(
+        "Product", on_delete=SET_NULL, null=True, related_name="+"
+    )
 
 
 class Product(models.Model):
@@ -12,6 +32,11 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=6, decimal_places=2)
     inventory = models.IntegerField()
     last_update = models.DateTimeField(auto_now=True)
+    # Deleting a collection will not trigger a deletions of all the products in that collection
+    collection = models.ForeignKey(Collection, on_delete=models.PROTECT)
+    promotions = models.ManyToManyField(
+        Promotion
+    )  # to change name => related_name="products"
 
 
 class Customer(models.Model):
@@ -50,6 +75,15 @@ class Order(models.Model):
     payment_status = models.CharField(
         max_length=1, choices=PAYMENT_STATUS_CHOICES, default=PAYMENT_PENDING
     )
+    # If you delete customer it will not delete orders
+    customer = models.ForeignKey(Customer, on_delete=models.PROTECT)
+
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.PROTECT)
+    product = models.ForeignKey(Product, on_delete=models.PROTECT)
+    quantity = models.PositiveSmallIntegerField()
+    unit_price = models.DecimalField(max_digits=6, decimal_places=2)
 
 
 # One-to-One Relationship
@@ -60,3 +94,13 @@ class Address(models.Model):
         Customer, on_delete=models.CASCADE, primary_key=True
     )
     # customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+
+
+class Cart(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveSmallIntegerField()

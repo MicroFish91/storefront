@@ -1,19 +1,11 @@
 from django.db import models
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 
-# Generic relationships
 
-
-class Tag(models.Model):
-    label = models.CharField(max_length=255)
-
-
-class TaggedItem(models.Model):
-    # What tag applied to what item
-    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
-    # Type (product, video, article, etc.)
-    # ID
+class LikedItem(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveSmallIntegerField()
     content_object = GenericForeignKey()
